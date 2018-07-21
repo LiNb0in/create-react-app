@@ -18,11 +18,16 @@ const clearConsole = require('./clearConsole');
 const formatWebpackMessages = require('./formatWebpackMessages');
 const getProcessForPort = require('./getProcessForPort');
 
-const isInteractive = process.stdout.isTTY;
+const isInteractive = process.stdout.isTTY; // 检查是否连接到TTY(终端)
 let handleCompile;
 
 // You can safely remove this after ejecting.
 // We only use this block for testing of Create React App itself:
+// process.argv：
+//    1.第一个arg返回Node可执行文件所在绝对路径
+//    2.第二个arg返回当前文件执行的路径
+// 检测测试模块?
+// 
 const isSmokeTest = process.argv.some(arg => arg.indexOf('--smoke-test') > -1);
 if (isSmokeTest) {
   handleCompile = (err, stats) => {
@@ -34,7 +39,11 @@ if (isSmokeTest) {
   };
 }
 
+// protocol  @params 协议 http https ?
+// host      @params 域名 0.0.0.0 ?
+// port      @port   端口号 8080 ?
 function prepareUrls(protocol, host, port) {
+  // 格式化url
   const formatUrl = hostname =>
     url.format({
       protocol,
@@ -42,6 +51,7 @@ function prepareUrls(protocol, host, port) {
       port,
       pathname: '/',
     });
+  // 输出漂亮的url
   const prettyPrintUrl = hostname =>
     url.format({
       protocol,
@@ -49,14 +59,14 @@ function prepareUrls(protocol, host, port) {
       port: chalk.bold(port),
       pathname: '/',
     });
-
+   // 是否没有指定域名
   const isUnspecifiedHost = host === '0.0.0.0' || host === '::';
   let prettyHost, lanUrlForConfig, lanUrlForTerminal;
   if (isUnspecifiedHost) {
-    prettyHost = 'localhost';
+    prettyHost = 'localhost'; // 没有给定域名的话就给一个localhost
     try {
       // This can only return an IPv4 address
-      lanUrlForConfig = address.ip();
+      lanUrlForConfig = address.ip(); // 拿到IPv4
       if (lanUrlForConfig) {
         // Check if the address is a private ip
         // https://en.wikipedia.org/wiki/Private_network#Private_IPv4_address_spaces
@@ -66,25 +76,25 @@ function prepareUrls(protocol, host, port) {
           )
         ) {
           // Address is private, format it for later use
-          lanUrlForTerminal = prettyPrintUrl(lanUrlForConfig);
+          lanUrlForTerminal = prettyPrintUrl(lanUrlForConfig); // 格式化
         } else {
           // Address is not private, so we will discard it
-          lanUrlForConfig = undefined;
+          lanUrlForConfig = undefined; // 清空
         }
       }
     } catch (_e) {
       // ignored
     }
   } else {
-    prettyHost = host;
+    prettyHost = host; // 配置了host
   }
   const localUrlForTerminal = prettyPrintUrl(prettyHost);
   const localUrlForBrowser = formatUrl(prettyHost);
   return {
-    lanUrlForConfig,
-    lanUrlForTerminal,
-    localUrlForTerminal,
-    localUrlForBrowser,
+    lanUrlForConfig, // ipv4              \
+    lanUrlForTerminal, // 格式化的ipv4     /  没有设置host的时候才有值
+    localUrlForTerminal, // 格式化
+    localUrlForBrowser, // 格式化
   };
 }
 
